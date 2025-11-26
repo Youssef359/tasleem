@@ -13,7 +13,6 @@ export default function App() {
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
 
-  // Mock transaction data
   const transaction = {
     title: 'Premium UI Kit - Complete Design System',
     price: 149.00,
@@ -32,7 +31,6 @@ export default function App() {
     e.preventDefault();
     setIsProcessing(true);
     
-    // Mock payment processing
     await new Promise(resolve => setTimeout(resolve, 2000));
     
     setIsProcessing(false);
@@ -94,7 +92,6 @@ export default function App() {
           </div>
         </nav>
 
-        {/* Success Message */}
         <div className="pt-20 pb-12 px-6">
           <div className="max-w-2xl mx-auto text-center mb-8">
             <h1 className="text-3xl mb-2">Payment Successful</h1>

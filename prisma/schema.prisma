@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  DEVELOPER
+  CLIENT
+  ADMIN
+}
+
+enum SessionStatus {
+  DRAFT
+  INVITED          
+  PENDING_PAYMENT  
+  ACTIVE          
+  COMPLETED        
+  CANCELLED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PENDING_VERIFICATION
+  VERIFIED
+  RELEASED
+}
+
+enum FileKind {
+  PROGRESS_IMAGE
+  FINAL_CODE
+  DEMO_VIDEO
+  PAYMENT_PROOF
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  clerkId    String   @unique
+  role       Role     @default(DEVELOPER)
+  name       String?
+  email      String?
+  createdAt  DateTime @default(now())
+  sessionsAsDeveloper Session[] @relation("developerSessions")
+  sessionsAsClient    Session[] @relation("clientSessions")
+  uploads    File[]
+}
+
+model Session {
+  id            Int            @id @default(autoincrement())
+  title         String
+  description   String
+  price         Decimal        @db.Decimal(10, 2)
+  deadline      DateTime?
+  inviteToken   String         @unique
+  status        SessionStatus  @default(DRAFT)
+  paymentStatus PaymentStatus  @default(UNPAID)
+  developerId   Int
+  clientId      Int? 
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  approvedAt    DateTime?
+  releasedAt    DateTime?
+  developer     User           @relation("developerSessions", fields: [developerId], references: [id])
+  client        User?          @relation("clientSessions", fields: [clientId], references: [id])
+  files         File[]
+  paymentNote   String?
+}
+
+model File {
+  id         Int       @id @default(autoincrement())
+  sessionId  Int
+  uploaderId Int
+  url        String
+  filename   String
+  mime       String
+  size       Int?
+  kind       FileKind
+  isLocked   Boolean   @default(true) 
+  createdAt  DateTime  @default(now())
+
+  session    Session   @relation(fields: [sessionId], references: [id])
+  uploader   User      @relation(fields: [uploaderId], references: [id])
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  actorId   Int?
+  action    String
+  details   String?
+  createdAt DateTime @default(now())
+}

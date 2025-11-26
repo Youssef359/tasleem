@@ -37,14 +37,12 @@ export default function App() {
   };
 
   const handleChangePassword = (currentPassword: string, newPassword: string) => {
-    // Mock password change
     console.log('Password change:', { currentPassword, newPassword });
     setShowChangePassword(false);
     showToast('Password changed successfully', 'success');
   };
 
   const handleDeleteAccount = () => {
-    // Mock account deletion
     console.log('Account deleted');
     setShowDeleteAccount(false);
     showToast('Account deleted. Redirecting...', 'success');
@@ -62,10 +60,8 @@ export default function App() {
     <div className="min-h-screen bg-black text-white">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 md:px-16 lg:px-16 py-10 md:py-20">
         <div className="max-w-[800px] mx-auto">
-          {/* Page Header */}
           <h1 className="text-[#fafafa] mb-8 md:mb-12">Profile</h1>
 
-          {/* Profile Identity Card */}
           <div className="bg-[#111111] border border-[#1a1a1a] rounded-xl p-6 md:p-8 mb-8">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
               <ProfilePicture
@@ -91,7 +87,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* Account Information Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
             <InfoCard label="Account Type" value={userData.accountType} isBadge />
             <InfoCard 
@@ -101,7 +96,6 @@ export default function App() {
             />
           </div>
 
-          {/* Security Section */}
           <div className="mt-8 md:mt-12">
             <h2 className="text-[#fafafa] mb-6">Security</h2>
             
@@ -121,7 +115,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* Danger Zone */}
           <div className="mt-12 border border-[#331111] rounded-xl p-6 md:p-8 bg-gradient-to-br from-[#0a0000] to-[#000000]">
             <div className="flex items-center gap-2 mb-4">
               <AlertTriangle className="w-5 h-5 text-[#ff4444]" />
@@ -146,7 +139,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* Modals */}
       {showChangePassword && (
         <ChangePasswordModal
           onClose={() => setShowChangePassword(false)}
@@ -161,7 +153,6 @@ export default function App() {
         />
       )}
 
-      {/* Toast Notification */}
       {toast && <Toast message={toast.message} type={toast.type} />}
     </div>
   );

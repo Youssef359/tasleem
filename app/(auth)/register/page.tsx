@@ -26,7 +26,6 @@ export default function App() {
 
   return (
     <div className="flex min-h-screen bg-black">
-      {/* Left Side - Black Background */}
       <div className="hidden lg:flex lg:w-1/2 bg-black flex-col justify-between p-12 border-r border-white/10">
         <div className="flex items-center gap-3">
           <TasleemLogo />
@@ -45,17 +44,14 @@ export default function App() {
         </div>
       </div>
 
-      {/* Right Side - Form */}
       <div className="flex-1 flex items-center justify-center p-8 bg-black">
         <div className="w-full max-w-md">
-          {/* Mobile Logo */}
           <div className="lg:hidden flex items-center gap-3 mb-8">
             <TasleemLogo />
             <span className="text-white tracking-wide">Tasleem</span>
           </div>
 
           <div className="space-y-6">
-            {/* Header */}
             <div className="space-y-2">
               <h1 className="text-white">Welcome to Tasleem</h1>
               <p className="text-white/60">
@@ -65,7 +61,6 @@ export default function App() {
               </p>
             </div>
 
-            {/* Tabs */}
             <div className="flex border-b border-white/10">
               <button
                 onClick={() => setActiveTab('signin')}
@@ -89,7 +84,6 @@ export default function App() {
               </button>
             </div>
 
-            {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               {activeTab === 'signup' && (
                 <>
@@ -224,7 +218,6 @@ export default function App() {
               </button>
             </form>
 
-            {/* Toggle Link */}
             <div className="text-center">
               <span className="text-white/60">
                 {activeTab === 'signin' 
