@@ -28,7 +28,7 @@ export async function createTransaction(formData: FormData) {
         clerkId: user.id,
         email: user.emailAddresses?.[0]?.emailAddress ?? undefined,
         name: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || undefined,
-        role: "DEVELOPER", // or determine from UI
+        role: "DEVELOPER", 
       },
     });
   }

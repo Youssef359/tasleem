@@ -1,5 +1,12 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
 }
 
 datasource db {
@@ -7,88 +14,72 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  DEVELOPER
+enum UserRole {
   CLIENT
+  DEVELOPER
   ADMIN
 }
 
-enum SessionStatus {
-  DRAFT
-  INVITED          
-  PENDING_PAYMENT  
-  ACTIVE          
-  COMPLETED        
-  CANCELLED
+enum TransactionStatus {
+  CREATED           // 1. المبرمج عمل المشروع
+  PAYMENT_VERIFYING // 2. العميل رفع صورة التحويل وبنراجعها
+  IN_PROGRESS       // 3. الفلوس وصلت والشغل بدأ
+  IN_REVIEW         // 4. المبرمج رفع "البريفيو" (فيديو/صور)
+  COMPLETED         // 5. العميل وافق واستلم الكود والفلوس وصلت للمبرمج
+  CANCELLED         // 6. المشروع اتلغى (حسب شروط الاسترجاع)
 }
 
-enum PaymentStatus {
-  UNPAID
-  PENDING_VERIFICATION
-  VERIFIED
-  RELEASED
+enum CancelledBy {
+  CLIENT
+  DEVELOPER
+  ADMIN
 }
 
-enum FileKind {
-  PROGRESS_IMAGE
-  FINAL_CODE
-  DEMO_VIDEO
-  PAYMENT_PROOF
-}
-
+// 3. جدول المستخدمين (بنربطه مع Clerk)
 model User {
-  id         Int      @id @default(autoincrement())
-  clerkId    String   @unique
-  role       Role     @default(DEVELOPER)
-  name       String?
-  email      String?
-  createdAt  DateTime @default(now())
-  sessionsAsDeveloper Session[] @relation("developerSessions")
-  sessionsAsClient    Session[] @relation("clientSessions")
-  uploads    File[]
-}
-
-model Session {
-  id            Int            @id @default(autoincrement())
-  title         String
-  description   String
-  price         Decimal        @db.Decimal(10, 2)
-  deadline      DateTime?
-  inviteToken   String         @unique
-  status        SessionStatus  @default(DRAFT)
-  paymentStatus PaymentStatus  @default(UNPAID)
-  developerId   Int
-  clientId      Int? 
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  approvedAt    DateTime?
-  releasedAt    DateTime?
-  developer     User           @relation("developerSessions", fields: [developerId], references: [id])
-  client        User?          @relation("clientSessions", fields: [clientId], references: [id])
-  files         File[]
-  paymentNote   String?
-}
-
-model File {
-  id         Int       @id @default(autoincrement())
-  sessionId  Int
-  uploaderId Int
-  url        String
-  filename   String
-  mime       String
-  size       Int?
-  kind       FileKind
-  isLocked   Boolean   @default(true) 
-  createdAt  DateTime  @default(now())
-
-  session    Session   @relation(fields: [sessionId], references: [id])
-  uploader   User      @relation(fields: [uploaderId], references: [id])
-}
-
-model AuditLog {
-  id        Int      @id @default(autoincrement())
-  actorId   Int?
-  action    String
-  details   String?
+  id        String   @id // هنا هنخزن الـ ID اللي جاي من Clerk (مش uuid عشوائي)
+  email     String   @unique
+  name      String?
+  role      UserRole @default(CLIENT)
+  
+  // علاقات المستخدم بالمشاريع
+  clientTransactions    Transaction[] @relation("ClientProjects")
+  developerTransactions Transaction[] @relation("DeveloperProjects")
+  
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 4. جدول المعاملات (المشروع نفسه)
+model Transaction {
+  id          String            @id @default(cuid()) // ID مميز للمشروع
+  title       String
+  description String?
+  price       Decimal           @db.Decimal(10, 2) // عشان الفلوس لازم دقة عالية
+  
+  // المواعيد
+  deadline    DateTime          // أهم حقل عشان حساب الغرامة
+  
+  // الحالة
+  status      TransactionStatus @default(CREATED)
+  
+  // ملفات وإثباتات (هنا هنشيل لينكات الصور اللي جاية من UploadThing)
+  paymentReceiptUrl String?     // صورة وصل التحويل البنكي
+  previewUrl        String?     // فيديو أو صور للمعاينة (المرحلة 5)
+  finalSourceUrl    String?     // لينك تحميل الكود النهائي (المرحلة 7)
+  
+  // منطق الإلغاء
+  cancelledBy       CancelledBy?
+  refundPercentage  Int?        // 50 أو 100
+  cancellationReason String?
+
+  // العلاقات (مين المبرمج ومين العميل)
+  developerId String
+  developer   User   @relation("DeveloperProjects", fields: [developerId], references: [id])
+  
+  clientId    String? // ممكن يكون فاضي في الأول لحد ما العميل يدخل
+  client      User?   @relation("ClientProjects", fields: [clientId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
